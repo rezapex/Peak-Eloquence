@@ -2,8 +2,10 @@
 	import { onMount } from 'svelte';
 	export let data;
 	let audioPlayer;
+	let verseAudioPlayer;
 	let currentAyah = 0;
 	let bookmarks = [];
+	let isPlayingComplete = false;
 
 	onMount(() => {
 		const stored = localStorage.getItem(`bookmarks-${data.surah.number}`);
@@ -23,17 +25,55 @@
 	}
 
 	function playAyah(index) {
-		if (audioPlayer) {
+		if (verseAudioPlayer) {
+			// Stop the complete surah player if it's playing
+			if (isPlayingComplete && audioPlayer) {
+				audioPlayer.pause();
+				isPlayingComplete = false;
+			}
 			currentAyah = index;
-			audioPlayer.src = data.audio.ayahs[index].audio;
+			verseAudioPlayer.src = data.audio.ayahs[index].audio;
+			verseAudioPlayer.play();
+		}
+	}
+
+	function onVerseAudioEnded() {
+		if (currentAyah < data.surah.ayahs.length - 1) {
+			playAyah(currentAyah + 1);
+		}
+	}
+
+	function playCompleteSurah() {
+		if (audioPlayer) {
+			isPlayingComplete = true;
+			currentAyah = 0;
+			audioPlayer.src = data.audio.ayahs[0].audio;
 			audioPlayer.play();
 		}
 	}
 
-	function onAudioEnded() {
-		if (currentAyah < data.surah.ayahs.length - 1) {
-			playAyah(currentAyah + 1);
+	function onCompleteAudioEnded() {
+		if (isPlayingComplete && currentAyah < data.surah.ayahs.length - 1) {
+			currentAyah++;
+			audioPlayer.src = data.audio.ayahs[currentAyah].audio;
+			audioPlayer.play();
+		} else {
+			isPlayingComplete = false;
+			currentAyah = 0;
 		}
+	}
+
+	function stopAllAudio() {
+		if (audioPlayer) {
+			audioPlayer.pause();
+			audioPlayer.currentTime = 0;
+			isPlayingComplete = false;
+		}
+		if (verseAudioPlayer) {
+			verseAudioPlayer.pause();
+			verseAudioPlayer.currentTime = 0;
+		}
+		currentAyah = 0;
 	}
 </script>
 
@@ -53,11 +93,33 @@
 	</header>
 
 	<div class="audio-controls">
+		<div class="complete-surah-player">
+			<h2>Listen to Complete Surah</h2>
+			<div class="player-controls">
+				<button 
+					class="play-btn" 
+					on:click={isPlayingComplete ? stopAllAudio : playCompleteSurah}
+				>
+					{isPlayingComplete ? '◼ Stop' : '▶ Play Complete Surah'}
+				</button>
+				{#if isPlayingComplete}
+					<p class="playing-info">Playing verse {currentAyah + 1} of {data.surah.numberOfAyahs}</p>
+				{/if}
+			</div>
+			<audio
+				bind:this={audioPlayer}
+				on:ended={onCompleteAudioEnded}
+				class="hidden"
+			>
+				<track kind="captions" />
+			</audio>
+		</div>
+		
+		<!-- Hidden audio player for verse-by-verse playback -->
 		<audio
-			bind:this={audioPlayer}
-			on:ended={onAudioEnded}
-			controls
-			controlsList="nodownload"
+			bind:this={verseAudioPlayer}
+			on:ended={onVerseAudioEnded}
+			class="hidden"
 		>
 			<track kind="captions" />
 		</audio>
@@ -121,13 +183,51 @@
 
 	.audio-controls {
 		margin: 2rem 0;
-		display: flex;
-		justify-content: center;
+		background: white;
+		border-radius: 8px;
+		padding: 1.5rem;
+		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 	}
 
-	audio {
-		width: 100%;
-		max-width: 500px;
+	.complete-surah-player {
+		text-align: center;
+	}
+
+	.complete-surah-player h2 {
+		color: var(--color-theme-1);
+		font-size: 1.2rem;
+		margin: 0 0 1rem;
+	}
+
+	.player-controls {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 1rem;
+	}
+
+	.play-btn {
+		background: var(--color-theme-1);
+		color: white;
+		border: none;
+		padding: 0.75rem 1.5rem;
+		border-radius: 4px;
+		cursor: pointer;
+		font-size: 1rem;
+		transition: opacity 0.2s;
+	}
+
+	.play-btn:hover {
+		opacity: 0.9;
+	}
+
+	.playing-info {
+		color: #666;
+		margin: 0;
+	}
+
+	.hidden {
+		display: none;
 	}
 
 	.verses {
