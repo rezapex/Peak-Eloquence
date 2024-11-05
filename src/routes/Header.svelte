@@ -35,7 +35,7 @@
 	</nav>
 
 	<div class="corner">
-		<a href="https://github.com/rezajafar">
+		<a href="https://github.com/rezapex">
 			<img src={github} alt="GitHub" />
 		</a>
 	</div>

@@ -1,23 +1,24 @@
-<script>
+<script lang="ts">
 	import { onMount } from 'svelte';
 	import { fade } from 'svelte/transition';
+	import type { Message, SearchFilters, Provider, Language } from '$lib/types/chat';
 
-	let messages = [];
+	let messages: Message[] = [];
 	let userInput = '';
 	let isLoading = false;
 	let currentResponse = '';
 	let selectedLanguage = 'en';
 	let isListening = false;
-	let recognition;
-	let bookmarks = [];
-	let notes = {};
-	let searchFilters = {
+	let recognition: any = null;
+	let bookmarks: string[] = [];
+	let notes: Record<string, string> = {};
+	let searchFilters: SearchFilters = {
 		type: 'all',
 		language: 'en'
 	};
 	let selectedProvider = 'openai';
 
-	const languages = [
+	const languages: Language[] = [
 		{ code: 'en', name: 'English' },
 		{ code: 'ar', name: 'العربية' },
 		{ code: 'ur', name: 'اردو' },
@@ -25,12 +26,9 @@
 		{ code: 'tr', name: 'Türkçe' }
 	];
 
-	const providers = [
+	const providers: Provider[] = [
 		{ id: 'openai', name: 'GPT-4 Turbo' },
-		{ id: 'openrouter', name: 'Claude-2' },
-		{ id: 'mistral', name: 'Mistral-7B' },
-		{ id: 'llama', name: 'Llama-2-70B' },
-		{ id: 'mixtral', name: 'Mixtral-8x7B' }
+		{ id: 'openrouter', name: 'Claude-2' }
 	];
 
 	const suggestedPrompts = [
@@ -67,12 +65,13 @@
 		if (savedNotes) notes = JSON.parse(savedNotes);
 
 		if ('webkitSpeechRecognition' in window) {
-			recognition = new webkitSpeechRecognition();
+			// @ts-ignore - webkitSpeechRecognition is not in lib.dom.d.ts
+			recognition = new window.webkitSpeechRecognition();
 			recognition.continuous = false;
 			recognition.interimResults = false;
 			recognition.lang = 'en-US';
 
-			recognition.onresult = (event) => {
+			recognition.onresult = (event: any) => {
 				const transcript = event.results[0][0].transcript;
 				userInput = transcript;
 				handleSubmit();
@@ -84,7 +83,7 @@
 		}
 	});
 
-	function usePrompt(prompt) {
+	function usePrompt(prompt: string) {
 		userInput = prompt;
 		handleSubmit();
 	}
@@ -100,7 +99,7 @@
 		}
 	}
 
-	function toggleBookmark(messageIndex) {
+	function toggleBookmark(messageIndex: number) {
 		const messageId = `${messages[messageIndex].role}-${messageIndex}`;
 		const bookmarkIndex = bookmarks.indexOf(messageId);
 		
@@ -113,7 +112,7 @@
 		localStorage.setItem('quran-ai-bookmarks', JSON.stringify(bookmarks));
 	}
 
-	function saveNote(messageIndex, note) {
+	function saveNote(messageIndex: number, note: string) {
 		const messageId = `${messages[messageIndex].role}-${messageIndex}`;
 		notes = { ...notes, [messageId]: note };
 		localStorage.setItem('quran-ai-notes', JSON.stringify(notes));
@@ -122,7 +121,7 @@
 	async function handleSubmit() {
 		if (!userInput.trim()) return;
 
-		const userMessage = {
+		const userMessage: Message = {
 			role: 'user',
 			content: userInput,
 			language: selectedLanguage
@@ -147,9 +146,14 @@
 				})
 			});
 
-			if (!response.ok) throw new Error('Failed to get response');
+			if (!response.ok) {
+				const errorData = await response.text();
+				throw new Error(errorData || 'Failed to get response');
+			}
 
-			const reader = response.body.getReader();
+			const reader = response.body?.getReader();
+			if (!reader) throw new Error('Failed to get response stream');
+
 			const decoder = new TextDecoder();
 
 			while (true) {
@@ -167,10 +171,11 @@
 					}
 				];
 			}
-		} catch (error) {
+		} catch (error: unknown) {
+			const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
 			messages = [...messages, {
 				role: 'system',
-				content: 'Sorry, there was an error processing your request. Please try again.'
+				content: `Error: ${errorMessage}`
 			}];
 		} finally {
 			isLoading = false;
@@ -244,7 +249,7 @@
 					</div>
 				</div>
 				<p class="model-info">
-					Now featuring multiple AI models including GPT-4, Claude-2, Mistral, and more!
+					Powered by GPT-4 Turbo and Claude-2 for accurate Islamic knowledge
 				</p>
 				<p class="disclaimer">Note: This is an AI assistant. For religious guidance, please consult with qualified scholars.</p>
 			</div>
