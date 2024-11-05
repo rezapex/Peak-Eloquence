@@ -6,13 +6,23 @@
 	let currentAyah = 0;
 	let bookmarks = [];
 	let isPlayingComplete = false;
+	let englishOnly = false;
 
 	onMount(() => {
 		const stored = localStorage.getItem(`bookmarks-${data.surah.number}`);
 		if (stored) {
 			bookmarks = JSON.parse(stored);
 		}
+		const storedMode = localStorage.getItem('reading-mode');
+		if (storedMode) {
+			englishOnly = storedMode === 'english';
+		}
 	});
+
+	function toggleReadingMode() {
+		englishOnly = !englishOnly;
+		localStorage.setItem('reading-mode', englishOnly ? 'english' : 'both');
+	}
 
 	function toggleBookmark(ayahNumber) {
 		const index = bookmarks.indexOf(ayahNumber);
@@ -26,7 +36,6 @@
 
 	function playAyah(index) {
 		if (verseAudioPlayer) {
-			// Stop the complete surah player if it's playing
 			if (isPlayingComplete && audioPlayer) {
 				audioPlayer.pause();
 				isPlayingComplete = false;
@@ -90,6 +99,17 @@
 		<p class="info">
 			{data.surah.revelationType} • {data.surah.numberOfAyahs} verses
 		</p>
+		<div class="reading-mode">
+			<label class="switch">
+				<input 
+					type="checkbox" 
+					bind:checked={englishOnly}
+					on:change={toggleReadingMode}
+				>
+				<span class="slider"></span>
+			</label>
+			<span class="mode-label">English Only</span>
+		</div>
 	</header>
 
 	<div class="audio-controls">
@@ -115,7 +135,6 @@
 			</audio>
 		</div>
 		
-		<!-- Hidden audio player for verse-by-verse playback -->
 		<audio
 			bind:this={verseAudioPlayer}
 			on:ended={onVerseAudioEnded}
@@ -139,7 +158,9 @@
 					</button>
 				</div>
 				<div class="verse-text">
-					<p class="arabic">{ayah.text}</p>
+					{#if !englishOnly}
+						<p class="arabic">{ayah.text}</p>
+					{/if}
 					<p class="translation">{data.translation.ayahs[index].text}</p>
 				</div>
 			</div>
@@ -179,6 +200,64 @@
 
 	.info {
 		color: #666;
+	}
+
+	.reading-mode {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		margin-top: 1rem;
+		gap: 0.5rem;
+	}
+
+	.mode-label {
+		color: #666;
+		font-size: 0.9rem;
+	}
+
+	.switch {
+		position: relative;
+		display: inline-block;
+		width: 48px;
+		height: 24px;
+	}
+
+	.switch input {
+		opacity: 0;
+		width: 0;
+		height: 0;
+	}
+
+	.slider {
+		position: absolute;
+		cursor: pointer;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		background-color: #ccc;
+		transition: .4s;
+		border-radius: 24px;
+	}
+
+	.slider:before {
+		position: absolute;
+		content: "";
+		height: 18px;
+		width: 18px;
+		left: 3px;
+		bottom: 3px;
+		background-color: white;
+		transition: .4s;
+		border-radius: 50%;
+	}
+
+	input:checked + .slider {
+		background-color: var(--color-theme-1);
+	}
+
+	input:checked + .slider:before {
+		transform: translateX(24px);
 	}
 
 	.audio-controls {
@@ -301,5 +380,11 @@
 		margin: 1rem 0 0;
 		color: #666;
 		line-height: 1.6;
+	}
+
+	@media (max-width: 640px) {
+		.container {
+			padding: 1rem;
+		}
 	}
 </style>

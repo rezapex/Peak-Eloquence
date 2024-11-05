@@ -3,9 +3,13 @@
 	const dispatch = createEventDispatcher();
 
 	let searchTerm = '';
+	let timeoutId;
 	
 	function handleInput() {
-		dispatch('search', searchTerm);
+		clearTimeout(timeoutId);
+		timeoutId = setTimeout(() => {
+			dispatch('search', searchTerm);
+		}, 300); // 300ms debounce
 	}
 </script>
 
@@ -21,8 +25,8 @@
 
 <style>
 	.search-container {
-		max-width: 600px;
-		margin: 0 auto;
+		width: 100%;
+		margin-bottom: 2rem;
 	}
 
 	.search-input {
@@ -31,11 +35,25 @@
 		font-size: 1rem;
 		border: 2px solid #ddd;
 		border-radius: 8px;
-		transition: border-color 0.2s;
+		transition: all 0.2s ease;
+		background: white;
+		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+		box-sizing: border-box;
 	}
 
 	.search-input:focus {
 		outline: none;
 		border-color: var(--color-theme-1);
+		box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+		transform: translateY(-1px);
+	}
+
+	.search-input::placeholder {
+		color: #999;
+		transition: color 0.2s ease;
+	}
+
+	.search-input:focus::placeholder {
+		color: #666;
 	}
 </style>
