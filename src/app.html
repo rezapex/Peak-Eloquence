@@ -1,48 +1,54 @@
 <!doctype html>
 <html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" href="%sveltekit.assets%/favicon.png" />
-		<meta name="viewport" content="width=device-width, initial-scale=1" />
-		
-		<!-- Primary Meta Tags -->
-		<meta name="title" content="Quran Reader - Read, Listen, and Study the Holy Quran">
-		<meta name="description" content="A comprehensive Quran reading and listening platform with translations, audio recitations, and study tools. Access the Holy Quran anytime, anywhere.">
-		<meta name="keywords" content="quran, quran reader, holy quran, islamic, quran audio, quran translation, quran study">
-		<meta name="author" content="Quran Reader">
-		<meta name="theme-color" content="#ff3e00">
 
-		<!-- Open Graph / Facebook -->
-		<meta property="og:type" content="website">
-		<meta property="og:url" content="https://quran-reader.stackblitz.io/">
-		<meta property="og:title" content="Quran Reader - Read, Listen, and Study the Holy Quran">
-		<meta property="og:description" content="A comprehensive Quran reading and listening platform with translations, audio recitations, and study tools. Access the Holy Quran anytime, anywhere.">
-		<meta property="og:image" content="%sveltekit.assets%/og-image.png">
+<head>
+	<meta charset="utf-8" />
+	<link rel="icon" href="%sveltekit.assets%/quran.svg" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
 
-		<!-- Twitter -->
-		<meta property="twitter:card" content="summary_large_image">
-		<meta property="twitter:url" content="https://quran-reader.stackblitz.io/">
-		<meta property="twitter:title" content="Quran Reader - Read, Listen, and Study the Holy Quran">
-		<meta property="twitter:description" content="A comprehensive Quran reading and listening platform with translations, audio recitations, and study tools. Access the Holy Quran anytime, anywhere.">
-		<meta property="twitter:image" content="%sveltekit.assets%/og-image.png">
+	<!-- Primary Meta Tags -->
+	<meta name="title" content="Quran Reader - Read, Listen, and Study the Holy Quran">
+	<meta name="description"
+		content="A comprehensive Quran reading and listening platform with translations, audio recitations, and study tools. Access the Holy Quran anytime, anywhere.">
+	<meta name="keywords"
+		content="quran, quran reader, holy quran, islamic, quran audio, quran translation, quran study">
+	<meta name="author" content="Quran Reader">
+	<meta name="theme-color" content="#ff3e00">
 
-		<!-- PWA -->
-		<link rel="manifest" href="%sveltekit.assets%/manifest.json">
-		<link rel="apple-touch-icon" href="%sveltekit.assets%/icon-192.png">
-		
-		<!-- Preconnect to APIs -->
-		<link rel="preconnect" href="https://api.alquran.cloud">
-		<link rel="dns-prefetch" href="https://api.alquran.cloud">
-		
-		%sveltekit.head%
-	</head>
-	<body data-sveltekit-preload-data="hover">
-		<div style="display: contents">%sveltekit.body%</div>
-		<div id="toast-container" aria-live="polite"></div>
-		<noscript>
-			<div class="noscript-message">
-				Please enable JavaScript to use the Quran Reader application.
-			</div>
-		</noscript>
-	</body>
+	<!-- Open Graph / Facebook -->
+	<meta property="og:type" content="website">
+	<meta property="og:url" content="https://peakofeloquence.org">
+	<meta property="og:title" content="Quran Reader - Read, Listen, and Study the Holy Quran">
+	<meta property="og:description"
+		content="A comprehensive Quran reading and listening platform with translations, audio recitations, and study tools. Access the Holy Quran anytime, anywhere.">
+	<meta property="og:image" content="%sveltekit.assets%/quran.svg">
+
+	<!-- Twitter -->
+	<meta property="twitter:card" content="summary_large_image">
+	<meta property="twitter:url" content="https://peakofeloquence.org">
+	<meta property="twitter:title" content="Quran Reader - Read, Listen, and Study the Holy Quran">
+	<meta property="twitter:description"
+		content="A comprehensive Quran reading and listening platform with translations, audio recitations, and study tools. Access the Holy Quran anytime, anywhere.">
+	<meta property="twitter:image" content="%sveltekit.assets%/quran.svg">
+
+	<!-- PWA -->
+	<link rel="manifest" href="%sveltekit.assets%/manifest.json">
+
+	<!-- Preconnect to APIs -->
+	<link rel="preconnect" href="https://api.alquran.cloud">
+	<link rel="dns-prefetch" href="https://api.alquran.cloud">
+
+	%sveltekit.head%
+</head>
+
+<body data-sveltekit-preload-data="hover">
+	<div style="display: contents">%sveltekit.body%</div>
+	<div id="toast-container" aria-live="polite"></div>
+	<noscript>
+		<div class="noscript-message">
+			Please enable JavaScript to use the Quran Reader application.
+		</div>
+	</noscript>
+</body>
+
 </html>
