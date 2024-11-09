@@ -8,6 +8,15 @@ const config = {
 		alias: {
 			$lib: './src/lib',
 			$components: './src/lib/components'
+		},
+		prerender: {
+			handleHttpError: ({ path, referrer, message }) => {
+				// Ignore missing favicon
+				if (path === '/favicon.ico') return;
+
+				// Throw error for other cases
+				throw new Error(message);
+			}
 		}
 	},
 	preprocess: vitePreprocess(),
