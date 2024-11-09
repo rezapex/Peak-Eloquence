@@ -1,119 +1,138 @@
-<script>
-	// @ts-nocheck
-
-	import { createEventDispatcher } from 'svelte';
+<script lang="ts">
+	import { onMount, onDestroy, createEventDispatcher } from 'svelte';
 	import PlayButton from './PlayButton.svelte';
+	import { audioStore, audioActions } from '$lib/stores/audioStore';
 
-	export let src = '';
-	export let title = '';
-	export let subtitle = '';
-	export let size = 'md';
+	export let src: string;
+	export let title: string;
+	export let subtitle: string = '';
+	export let size: 'sm' | 'md' | 'lg' = 'md';
+	export let id: string | number;
 
-	/**
-	 * @type {HTMLAudioElement}
-	 */
-	let audio;
-	let isPlaying = false;
+	let audio: HTMLAudioElement | null = null;
 	let progress = 0;
 	let duration = 0;
 	let currentTime = 0;
+	let isPlaying = false;
+	let isLoading = true;
 
 	const dispatch = createEventDispatcher();
 
-	/**
-	 * @param {number} seconds
-	 */
-	function formatTime(seconds) {
+	// Subscribe to the global audio store
+	$: {
+		if ($audioStore.playingId !== id && isPlaying && audio) {
+			audio.pause();
+			isPlaying = false;
+			dispatch('playStateChange', { isPlaying });
+		}
+	}
+
+	onMount(() => {
+		audio = new Audio(src);
+
+		const handleTimeUpdate = () => {
+			if (!audio?.duration) return;
+			currentTime = audio.currentTime;
+			progress = (audio.currentTime / audio.duration) * 100;
+		};
+
+		const handleLoadedMetadata = () => {
+			if (!audio) return;
+			duration = audio.duration;
+			isLoading = false;
+		};
+
+		const handleEnded = () => {
+			isPlaying = false;
+			audioActions.stopAll();
+			dispatch('playStateChange', { isPlaying });
+		};
+
+		audio.addEventListener('timeupdate', handleTimeUpdate);
+		audio.addEventListener('loadedmetadata', handleLoadedMetadata);
+		audio.addEventListener('ended', handleEnded);
+		audio.addEventListener('playing', () => {
+			isLoading = false;
+		});
+		audio.addEventListener('waiting', () => {
+			isLoading = true;
+		});
+		audio.addEventListener('error', handleError);
+
+		// Preload audio metadata
+		audio.preload = 'metadata';
+
+		return () => {
+			if (!audio) return;
+			audio.removeEventListener('timeupdate', handleTimeUpdate);
+			audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
+			audio.removeEventListener('ended', handleEnded);
+			audio.removeEventListener('playing', () => {});
+			audio.removeEventListener('waiting', () => {});
+			audio.removeEventListener('error', handleError);
+			audio.pause();
+		};
+	});
+
+	function handleError(e: ErrorEvent) {
+		console.error('Audio error:', e);
+		isPlaying = false;
+		isLoading = false;
+		dispatch('playStateChange', { isPlaying, error: true });
+	}
+
+	async function togglePlay() {
+		if (!audio) return;
+
+		try {
+			if (isPlaying) {
+				audio.pause();
+				audioActions.stopAll();
+			} else {
+				audioActions.setPlaying(id);
+				await audio.play();
+			}
+			isPlaying = !isPlaying;
+			dispatch('playStateChange', { isPlaying });
+		} catch (error) {
+			console.error('Playback error:', error);
+			isPlaying = false;
+			dispatch('playStateChange', { isPlaying, error: true });
+		}
+	}
+
+	function formatTime(seconds: number): string {
 		const minutes = Math.floor(seconds / 60);
 		const remainingSeconds = Math.floor(seconds % 60);
 		return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
 	}
 
-	function togglePlay() {
-		if (!audio) return;
-
-		if (isPlaying) {
+	onDestroy(() => {
+		if (audio) {
 			audio.pause();
-		} else {
-			audio.play();
+			if (isPlaying) {
+				audioActions.stopAll();
+			}
 		}
-
-		dispatch('playStateChange', { isPlaying: !isPlaying });
-	}
-
-	function updateProgress() {
-		if (!audio) return;
-		progress = (audio.currentTime / audio.duration) * 100;
-		currentTime = audio.currentTime;
-	}
-
-	/**
-	 * @param {KeyboardEvent & { currentTarget: EventTarget & HTMLDivElement; }} event
-	 */
-	function seek(event) {
-		if (!audio) return;
-		const bounds = event.currentTarget.getBoundingClientRect();
-		const percent = (event.clientX - bounds.left) / bounds.width;
-		audio.currentTime = audio.duration * percent;
-	}
-
-	$: if (audio) {
-		audio.addEventListener('play', () => (isPlaying = true));
-		audio.addEventListener('pause', () => (isPlaying = false));
-		audio.addEventListener('ended', () => {
-			isPlaying = false;
-			dispatch('ended');
-		});
-		audio.addEventListener('timeupdate', updateProgress);
-		audio.addEventListener('loadedmetadata', () => {
-			duration = audio.duration;
-		});
-	}
+	});
 </script>
 
 <div class="audio-player {size}">
-	<audio bind:this={audio} {src}>
-		<track kind="captions" />
-	</audio>
-
 	<div class="player-content">
-		<div class="player-info">
-			{#if title}
-				<div class="title">{title}</div>
-			{/if}
+		<PlayButton {isPlaying} {size} disabled={isLoading} on:click={togglePlay} />
+		<div class="track-info">
+			<div class="title">{title}</div>
 			{#if subtitle}
 				<div class="subtitle">{subtitle}</div>
 			{/if}
 		</div>
-
-		<div class="player-controls">
-			<PlayButton {isPlaying} on:click={togglePlay} {size} variant="minimal" />
-
-			<div class="progress-container">
-				<div
-					class="progress-bar"
-					role="slider"
-					tabindex="0"
-					aria-label="Audio progress"
-					aria-valuenow={progress}
-					aria-valuemin="0"
-					aria-valuemax="100"
-					on:click={seek}
-					on:keydown={(e) => {
-						if (e.key === 'Enter' || e.key === ' ') {
-							e.preventDefault();
-							seek(e);
-						}
-					}}
-				>
-					<div class="progress-fill" style="width: {progress}%"></div>
-				</div>
-				<div class="time">
-					<span>{formatTime(currentTime)}</span>
-					<span>{formatTime(duration)}</span>
-				</div>
-			</div>
+	</div>
+	<div class="progress-container">
+		<div class="time">{formatTime(currentTime)}</div>
+		<div class="progress-bar" class:loading={isLoading}>
+			<div class="progress" style="width: {progress}%" />
 		</div>
+		<div class="time">{formatTime(duration || 0)}</div>
 	</div>
 </div>
 
@@ -121,16 +140,7 @@
 	.audio-player {
 		background: white;
 		border-radius: 8px;
-		padding: 0.75rem;
-		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-	}
-
-	.audio-player.sm {
 		padding: 0.5rem;
-	}
-
-	.audio-player.lg {
-		padding: 1rem;
 	}
 
 	.player-content {
@@ -139,14 +149,13 @@
 		gap: 1rem;
 	}
 
-	.player-info {
-		min-width: 0;
+	.track-info {
 		flex: 1;
+		min-width: 0;
 	}
 
 	.title {
 		font-weight: 500;
-		color: var(--color-theme-1);
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
@@ -155,61 +164,74 @@
 	.subtitle {
 		font-size: 0.875rem;
 		color: #666;
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
-	}
-
-	.player-controls {
-		display: flex;
-		align-items: center;
-		gap: 1rem;
-		flex: 2;
 	}
 
 	.progress-container {
-		flex: 1;
-		min-width: 0;
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		margin-top: 0.5rem;
 	}
 
 	.progress-bar {
+		flex: 1;
 		height: 4px;
 		background: #eee;
 		border-radius: 2px;
-		cursor: pointer;
-		position: relative;
-		margin-bottom: 0.25rem;
+		overflow: hidden;
 	}
 
-	.progress-fill {
-		position: absolute;
-		top: 0;
-		left: 0;
+	.progress {
 		height: 100%;
 		background: var(--color-theme-1);
-		border-radius: 2px;
 		transition: width 0.1s linear;
 	}
 
 	.time {
-		display: flex;
-		justify-content: space-between;
 		font-size: 0.75rem;
 		color: #666;
+		min-width: 3rem;
 	}
 
-	@media (max-width: 640px) {
-		.player-content {
-			flex-direction: column;
-			gap: 0.5rem;
-		}
+	.sm {
+		font-size: 0.875rem;
+	}
 
-		.player-info {
-			text-align: center;
-		}
+	.md {
+		font-size: 1rem;
+	}
 
-		.player-controls {
-			width: 100%;
+	.lg {
+		font-size: 1.125rem;
+	}
+
+	.progress-bar.loading {
+		opacity: 0.5;
+		position: relative;
+	}
+
+	.progress-bar.loading::after {
+		content: '';
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		background: linear-gradient(
+			90deg,
+			transparent 0%,
+			rgba(255, 255, 255, 0.5) 50%,
+			transparent 100%
+		);
+		animation: loading 1.5s infinite;
+	}
+
+	@keyframes loading {
+		from {
+			transform: translateX(-100%);
+		}
+		to {
+			transform: translateX(100%);
 		}
 	}
 </style>

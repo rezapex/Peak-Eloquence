@@ -10,15 +10,15 @@ export interface Surah {
     name: string;
     englishName: string;
     englishNameTranslation: string;
-    revelationType: string;
     numberOfAyahs: number;
-    ayahs: Ayah[];
+    revelationType: string;
+    audioUrl?: string;
+    isPlaying?: boolean;
 }
 
 export interface AudioData {
-    ayahs: Array<{
-        audio: string;
-    }>;
+    number: number;
+    audioUrl: string;
 }
 
 export interface TranslationData {
