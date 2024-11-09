@@ -1,6 +1,6 @@
-<script>
-	export let categories = [];
-	export let selectedCategory;
+<script lang="ts">
+	export let categories: Array<{ id: string; name: string }>;
+	export let selectedCategory: { id: string; name: string } | null;
 </script>
 
 <aside class="categories">
@@ -9,8 +9,8 @@
 		{#each categories as category}
 			<li>
 				<button
-					class:active={selectedCategory.id === category.id}
-					on:click={() => selectedCategory = category}
+					class:active={selectedCategory?.id === category.id}
+					on:click={() => (selectedCategory = category)}
 				>
 					{category.name}
 				</button>

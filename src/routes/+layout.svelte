@@ -1,4 +1,5 @@
-<script>
+<script lang="ts">
+	import type { Page } from '@sveltejs/kit';
 	import Header from './Header.svelte';
 	import '../app.css';
 	import { page } from '$app/stores';
@@ -6,7 +7,7 @@
 	$: title = getTitle($page);
 	$: description = getDescription($page);
 
-	function getTitle(page) {
+	function getTitle(page: Page): string {
 		const baseTitle = 'Quran Reader';
 		const path = page.url.pathname;
 
@@ -23,16 +24,21 @@
 		return baseTitle;
 	}
 
-	function getDescription(page) {
+	function getDescription(page: Page): string {
 		const path = page.url.pathname;
-		const baseDesc = 'Read, listen, and study the Holy Quran with translations and audio recitations.';
+		const baseDesc =
+			'Read, listen, and study the Holy Quran with translations and audio recitations.';
 
 		if (path === '/') return baseDesc;
-		if (path.startsWith('/surah/')) return 'Read and listen to Quranic verses with translations and audio recitations.';
-		if (path === '/duas') return 'Collection of Islamic supplications (duas) with translations and transliterations.';
-		if (path === '/tools') return 'Islamic tools including Qibla finder, prayer times, and Quran AI assistant.';
+		if (path.startsWith('/surah/'))
+			return 'Read and listen to Quranic verses with translations and audio recitations.';
+		if (path === '/duas')
+			return 'Collection of Islamic supplications (duas) with translations and transliterations.';
+		if (path === '/tools')
+			return 'Islamic tools including Qibla finder, prayer times, and Quran AI assistant.';
 		if (path === '/about') return 'Learn about the Quran Reader application and its features.';
-		if (path === '/peak') return 'Explore the Peak of Eloquence (Nahj al-Balagha) with translations and commentary.';
+		if (path === '/peak')
+			return 'Explore the Peak of Eloquence (Nahj al-Balagha) with translations and commentary.';
 
 		return baseDesc;
 	}

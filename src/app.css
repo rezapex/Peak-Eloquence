@@ -22,11 +22,9 @@ body {
 	background-attachment: fixed;
 	background-color: var(--color-bg-1);
 	background-size: 100vw 100vh;
-	background-image: radial-gradient(
-			50% 50% at 50% 50%,
+	background-image: radial-gradient(50% 50% at 50% 50%,
 			rgba(255, 255, 255, 0.75) 0%,
-			rgba(255, 255, 255, 0) 100%
-		),
+			rgba(255, 255, 255, 0) 100%),
 		linear-gradient(180deg, var(--color-bg-0) 0%, var(--color-bg-1) 15%, var(--color-bg-2) 50%);
 }
 
@@ -70,12 +68,11 @@ pre {
 }
 
 .text-column {
-	display: flex;
 	max-width: 48rem;
-	flex: 0.6;
-	flex-direction: column;
-	justify-content: center;
 	margin: 0 auto;
+	padding: 0 1rem;
+	width: 100%;
+	box-sizing: border-box;
 }
 
 input,
@@ -104,4 +101,36 @@ button:focus:not(:focus-visible) {
 	position: absolute;
 	width: 1px;
 	white-space: nowrap;
+}
+
+/* Update the global container styles */
+.container {
+	width: 100%;
+	max-width: 1200px;
+	margin: 0 auto;
+	padding: 2rem;
+	box-sizing: border-box;
+	display: flex;
+	flex-direction: column;
+}
+
+/* Add content wrapper styles */
+.content-wrapper {
+	width: 100%;
+	max-width: 900px;
+	margin: 0 auto;
+	display: flex;
+	flex-direction: column;
+}
+
+@media (max-width: 1200px) {
+	.container {
+		padding: 1.5rem;
+	}
+}
+
+@media (max-width: 640px) {
+	.container {
+		padding: 1rem;
+	}
 }

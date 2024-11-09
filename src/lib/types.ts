@@ -1,10 +1,18 @@
-export interface Surah {
-    number: number;
-    englishName: string;
-    englishNameTranslation: string;
-    name: string;
-    numberOfAyahs: number;
-    revelationType: string;
-    audioUrl?: string;
-    isPlaying?: boolean;
+export interface GeolocationPosition {
+    coords: {
+        latitude: number;
+        longitude: number;
+        accuracy?: number;
+        altitude?: number | null;
+        altitudeAccuracy?: number | null;
+        heading?: number | null;
+        speed?: number | null;
+    };
+    timestamp: number;
+}
+
+// Additional types can be added here as needed
+export interface Location {
+    latitude: number;
+    longitude: number;
 }

@@ -1,12 +1,15 @@
-<script>
+<script lang="ts">
+	import type { SurahPageData } from '$lib/types/surah';
 	import { onMount } from 'svelte';
-	export let data;
-	let audioPlayer;
-	let verseAudioPlayer;
-	let currentAyah = 0;
-	let bookmarks = [];
-	let isPlayingComplete = false;
-	let englishOnly = false;
+
+	export let data: SurahPageData;
+
+	let audioPlayer: HTMLAudioElement;
+	let verseAudioPlayer: HTMLAudioElement;
+	let currentAyah: number = 0;
+	let bookmarks: number[] = [];
+	let isPlayingComplete: boolean = false;
+	let englishOnly: boolean = false;
 
 	onMount(() => {
 		const stored = localStorage.getItem(`bookmarks-${data.surah.number}`);
@@ -19,22 +22,22 @@
 		}
 	});
 
-	function toggleReadingMode() {
+	function toggleReadingMode(): void {
 		englishOnly = !englishOnly;
 		localStorage.setItem('reading-mode', englishOnly ? 'english' : 'both');
 	}
 
-	function toggleBookmark(ayahNumber) {
+	function toggleBookmark(ayahNumber: number): void {
 		const index = bookmarks.indexOf(ayahNumber);
 		if (index === -1) {
 			bookmarks = [...bookmarks, ayahNumber];
 		} else {
-			bookmarks = bookmarks.filter(n => n !== ayahNumber);
+			bookmarks = bookmarks.filter((n) => n !== ayahNumber);
 		}
 		localStorage.setItem(`bookmarks-${data.surah.number}`, JSON.stringify(bookmarks));
 	}
 
-	function playAyah(index) {
+	function playAyah(index: number): void {
 		if (verseAudioPlayer) {
 			if (isPlayingComplete && audioPlayer) {
 				audioPlayer.pause();
@@ -46,13 +49,13 @@
 		}
 	}
 
-	function onVerseAudioEnded() {
+	function onVerseAudioEnded(): void {
 		if (currentAyah < data.surah.ayahs.length - 1) {
 			playAyah(currentAyah + 1);
 		}
 	}
 
-	function playCompleteSurah() {
+	function playCompleteSurah(): void {
 		if (audioPlayer) {
 			isPlayingComplete = true;
 			currentAyah = 0;
@@ -61,7 +64,7 @@
 		}
 	}
 
-	function onCompleteAudioEnded() {
+	function onCompleteAudioEnded(): void {
 		if (isPlayingComplete && currentAyah < data.surah.ayahs.length - 1) {
 			currentAyah++;
 			audioPlayer.src = data.audio.ayahs[currentAyah].audio;
@@ -72,7 +75,7 @@
 		}
 	}
 
-	function stopAllAudio() {
+	function stopAllAudio(): void {
 		if (audioPlayer) {
 			audioPlayer.pause();
 			audioPlayer.currentTime = 0;
@@ -92,7 +95,7 @@
 
 <div class="container">
 	<a href="/" class="back-link">← Back to Surahs</a>
-	
+
 	<header>
 		<h1>{data.surah.englishName}</h1>
 		<p class="arabic-name">{data.surah.name}</p>
@@ -101,11 +104,7 @@
 		</p>
 		<div class="reading-mode">
 			<label class="switch">
-				<input 
-					type="checkbox" 
-					bind:checked={englishOnly}
-					on:change={toggleReadingMode}
-				>
+				<input type="checkbox" bind:checked={englishOnly} on:change={toggleReadingMode} />
 				<span class="slider"></span>
 			</label>
 			<span class="mode-label">English Only</span>
@@ -116,41 +115,31 @@
 		<div class="complete-surah-player">
 			<h2>Listen to Complete Surah</h2>
 			<div class="player-controls">
-				<button 
-					class="play-btn" 
-					on:click={isPlayingComplete ? stopAllAudio : playCompleteSurah}
-				>
+				<button class="play-btn" on:click={isPlayingComplete ? stopAllAudio : playCompleteSurah}>
 					{isPlayingComplete ? '◼ Stop' : '▶ Play Complete Surah'}
 				</button>
 				{#if isPlayingComplete}
 					<p class="playing-info">Playing verse {currentAyah + 1} of {data.surah.numberOfAyahs}</p>
 				{/if}
 			</div>
-			<audio
-				bind:this={audioPlayer}
-				on:ended={onCompleteAudioEnded}
-				class="hidden"
-			>
+			<audio bind:this={audioPlayer} on:ended={onCompleteAudioEnded} class="hidden">
 				<track kind="captions" />
 			</audio>
 		</div>
-		
-		<audio
-			bind:this={verseAudioPlayer}
-			on:ended={onVerseAudioEnded}
-			class="hidden"
-		>
+
+		<audio bind:this={verseAudioPlayer} on:ended={onVerseAudioEnded} class="hidden">
 			<track kind="captions" />
 		</audio>
 	</div>
 
 	<div class="verses">
 		{#each data.surah.ayahs as ayah, index}
-			<div class="verse" on:click={() => playAyah(index)}>
+			<!-- svelte-ignore a11y-click-events-have-key-events -->
+			<div class="verse" role="button" tabindex="0" on:click={() => playAyah(index)}>
 				<div class="verse-header">
 					<div class="verse-number">{ayah.numberInSurah}</div>
-					<button 
-						class="bookmark-btn" 
+					<button
+						class="bookmark-btn"
 						on:click|stopPropagation={() => toggleBookmark(ayah.numberInSurah)}
 						class:active={bookmarks.includes(ayah.numberInSurah)}
 					>
@@ -236,19 +225,19 @@
 		right: 0;
 		bottom: 0;
 		background-color: #ccc;
-		transition: .4s;
+		transition: 0.4s;
 		border-radius: 24px;
 	}
 
 	.slider:before {
 		position: absolute;
-		content: "";
+		content: '';
 		height: 18px;
 		width: 18px;
 		left: 3px;
 		bottom: 3px;
 		background-color: white;
-		transition: .4s;
+		transition: 0.4s;
 		border-radius: 50%;
 	}
 

@@ -1,10 +1,13 @@
-<script>
+<script lang="ts">
 	import { createEventDispatcher } from 'svelte';
-	const dispatch = createEventDispatcher();
+	const dispatch = createEventDispatcher<{ search: string }>();
 
 	let searchTerm = '';
-	let timeoutId;
-	
+	/**
+	 * @type {ReturnType<typeof setTimeout>}
+	 */
+	let timeoutId: ReturnType<typeof setTimeout>;
+
 	function handleInput() {
 		clearTimeout(timeoutId);
 		timeoutId = setTimeout(() => {

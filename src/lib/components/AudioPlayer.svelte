@@ -1,4 +1,6 @@
 <script>
+	// @ts-nocheck
+
 	import { createEventDispatcher } from 'svelte';
 	import PlayButton from './PlayButton.svelte';
 
@@ -7,6 +9,9 @@
 	export let subtitle = '';
 	export let size = 'md';
 
+	/**
+	 * @type {HTMLAudioElement}
+	 */
 	let audio;
 	let isPlaying = false;
 	let progress = 0;
@@ -15,6 +20,9 @@
 
 	const dispatch = createEventDispatcher();
 
+	/**
+	 * @param {number} seconds
+	 */
 	function formatTime(seconds) {
 		const minutes = Math.floor(seconds / 60);
 		const remainingSeconds = Math.floor(seconds % 60);
@@ -29,7 +37,7 @@
 		} else {
 			audio.play();
 		}
-		
+
 		dispatch('playStateChange', { isPlaying: !isPlaying });
 	}
 
@@ -39,6 +47,9 @@
 		currentTime = audio.currentTime;
 	}
 
+	/**
+	 * @param {KeyboardEvent & { currentTarget: EventTarget & HTMLDivElement; }} event
+	 */
 	function seek(event) {
 		if (!audio) return;
 		const bounds = event.currentTarget.getBoundingClientRect();
@@ -47,8 +58,8 @@
 	}
 
 	$: if (audio) {
-		audio.addEventListener('play', () => isPlaying = true);
-		audio.addEventListener('pause', () => isPlaying = false);
+		audio.addEventListener('play', () => (isPlaying = true));
+		audio.addEventListener('pause', () => (isPlaying = false));
 		audio.addEventListener('ended', () => {
 			isPlaying = false;
 			dispatch('ended');
@@ -62,7 +73,7 @@
 
 <div class="audio-player {size}">
 	<audio bind:this={audio} {src}>
-		<track kind="captions">
+		<track kind="captions" />
 	</audio>
 
 	<div class="player-content">
@@ -76,22 +87,26 @@
 		</div>
 
 		<div class="player-controls">
-			<PlayButton 
-				{isPlaying}
-				on:click={togglePlay}
-				{size}
-				variant="minimal"
-			/>
-			
+			<PlayButton {isPlaying} on:click={togglePlay} {size} variant="minimal" />
+
 			<div class="progress-container">
-				<div 
+				<div
 					class="progress-bar"
+					role="slider"
+					tabindex="0"
+					aria-label="Audio progress"
+					aria-valuenow={progress}
+					aria-valuemin="0"
+					aria-valuemax="100"
 					on:click={seek}
+					on:keydown={(e) => {
+						if (e.key === 'Enter' || e.key === ' ') {
+							e.preventDefault();
+							seek(e);
+						}
+					}}
 				>
-					<div 
-						class="progress-fill"
-						style="width: {progress}%"
-					></div>
+					<div class="progress-fill" style="width: {progress}%"></div>
 				</div>
 				<div class="time">
 					<span>{formatTime(currentTime)}</span>

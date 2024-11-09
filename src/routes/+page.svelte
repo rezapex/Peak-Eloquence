@@ -1,26 +1,41 @@
 <script>
 	import SearchBar from './SearchBar.svelte';
 	import AudioPlayer from '$lib/components/AudioPlayer.svelte';
-	
+
 	export let data;
 	let filteredSurahs = data.surahs;
 	let currentAudio = null;
+	/**
+	 * @type {null}
+	 */
 	let playingSurah = null;
 
+	/**
+	 * @param {{ detail: string; }} event
+	 */
 	function handleSearch(event) {
 		const searchTerm = event.detail.toLowerCase();
-		filteredSurahs = data.surahs.filter(surah => 
-			surah.englishName.toLowerCase().includes(searchTerm) ||
-			surah.englishNameTranslation.toLowerCase().includes(searchTerm) ||
-			surah.number.toString().includes(searchTerm)
+		filteredSurahs = data.surahs.filter(
+			(
+				/** @type {{ englishName: string; englishNameTranslation: string; number: { toString: () => string | any[]; }; }} */ surah
+			) =>
+				surah.englishName.toLowerCase().includes(searchTerm) ||
+				surah.englishNameTranslation.toLowerCase().includes(searchTerm) ||
+				surah.number.toString().includes(searchTerm)
 		);
 	}
 
+	/**
+	 * @param {{ number: any; isPlaying: any; }} surah
+	 * @param {CustomEvent<any>} event
+	 */
 	function handlePlayStateChange(surah, event) {
 		if (event.detail.isPlaying) {
 			if (playingSurah && playingSurah !== surah.number) {
 				// Stop previous audio if another surah starts playing
-				const prevSurah = filteredSurahs.find(s => s.number === playingSurah);
+				const prevSurah = filteredSurahs.find(
+					(/** @type {{ number: any; }} */ s) => s.number === playingSurah
+				);
 				if (prevSurah) {
 					prevSurah.isPlaying = false;
 				}
@@ -63,7 +78,8 @@
 								title={surah.englishName}
 								subtitle={`${surah.numberOfAyahs} verses`}
 								size="sm"
-								on:playStateChange={(e) => handlePlayStateChange(surah, e)}
+								on:playStateChange={(/** @type {CustomEvent<any>} */ e) =>
+									handlePlayStateChange(surah, e)}
 							/>
 						</div>
 					{/if}
@@ -78,7 +94,7 @@
 		width: 100%;
 		max-width: 1200px;
 		margin: 0 auto;
-		padding: 1rem;
+		padding: 2rem;
 		box-sizing: border-box;
 		overflow-x: hidden;
 	}
@@ -186,11 +202,61 @@
 
 	@media (max-width: 640px) {
 		.container {
-			padding: 0.5rem;
+			padding: 1rem 0.5rem;
+		}
+
+		.surah-grid {
+			padding: 0;
+			gap: 1rem;
 		}
 
 		.surah-card {
 			width: 100%;
+			margin: 0;
+			border-radius: 12px;
+		}
+
+		.surah-info {
+			padding: 1.25rem;
+		}
+
+		.audio-section {
+			padding: 1rem;
+		}
+
+		.number {
+			width: 45px;
+			height: 45px;
+			margin-right: 1.25rem;
+			font-size: 1.1rem;
+		}
+
+		.details h2 {
+			font-size: 1.2rem;
+			margin-bottom: 0.25rem;
+		}
+
+		.arabic-name {
+			font-size: 1.3rem;
+			margin: 0.35rem 0;
+		}
+
+		.translation {
+			margin: 0.35rem 0;
+		}
+	}
+
+	@media (max-width: 480px) {
+		.container {
+			padding: 0.75rem 0.5rem;
+		}
+
+		.surah-grid {
+			padding: 0;
+		}
+
+		.surah-card {
+			margin: 0;
 		}
 	}
 </style>

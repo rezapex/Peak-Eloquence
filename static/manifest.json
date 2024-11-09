@@ -1,20 +1,25 @@
 {
-    "name": "Quran Reader",
-    "short_name": "Quran",
+    "name": "Peak of Eloquence - Quran AI, Duas, and Islamic Tools",
+    "short_name": "Quran AI Tools",
+    "description": "Advanced Islamic learning platform with AI-powered Quran analysis, duas database, and interactive Islamic tools for deeper understanding",
     "start_url": "/",
     "display": "standalone",
     "background_color": "#ffffff",
     "theme_color": "#ff3e00",
+    "categories": [
+        "education",
+        "books",
+        "lifestyle",
+        "reference"
+    ],
     "icons": [
         {
-            "src": "icon-192.png",
-            "sizes": "192x192",
-            "type": "image/png"
-        },
-        {
-            "src": "icon-512.png",
-            "sizes": "512x512",
-            "type": "image/png"
+            "src": "favicon.svg",
+            "sizes": "any",
+            "type": "image/svg+xml",
+            "purpose": "any maskable"
         }
-    ]
+    ],
+    "orientation": "any",
+    "prefer_related_applications": false
 }

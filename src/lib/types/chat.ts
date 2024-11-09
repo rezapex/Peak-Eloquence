@@ -9,12 +9,13 @@ export interface SearchFilters {
     language: string;
 }
 
-export interface Provider {
+export type Provider = {
     id: string;
     name: string;
-}
+};
 
-export interface Language {
+export type Language = {
     code: string;
     name: string;
-}
+};
+

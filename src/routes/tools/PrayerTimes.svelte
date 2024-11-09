@@ -1,16 +1,18 @@
-<script>
+<script lang="ts">
 	export let location;
 	export let locationError;
 	export let getLocation;
 
-	let prayerTimes = null;
-	let prayerTimesError = '';
+	let prayerTimes: Record<string, string> | null = null;
+	let prayerTimesError: string = '';
 
-	async function getPrayerTimes(lat, lng) {
+	async function getPrayerTimes(lat: number, lng: number) {
 		try {
 			const date = new Date();
 			const timestamp = Math.floor(date.getTime() / 1000);
-			const response = await fetch(`https://api.aladhan.com/v1/timings/${timestamp}?latitude=${lat}&longitude=${lng}&method=2`);
+			const response = await fetch(
+				`https://api.aladhan.com/v1/timings/${timestamp}?latitude=${lat}&longitude=${lng}&method=2`
+			);
 			const data = await response.json();
 			prayerTimes = data.data.timings;
 			prayerTimesError = '';
@@ -31,7 +33,10 @@
 		<button class="retry-btn" on:click={getLocation}>Retry</button>
 	{:else if prayerTimesError}
 		<p class="error">{prayerTimesError}</p>
-		<button class="retry-btn" on:click={() => getPrayerTimes(location.latitude, location.longitude)}>
+		<button
+			class="retry-btn"
+			on:click={() => getPrayerTimes(location.latitude, location.longitude)}
+		>
 			Retry
 		</button>
 	{:else if prayerTimes}

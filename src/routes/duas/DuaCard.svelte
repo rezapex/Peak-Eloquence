@@ -1,8 +1,18 @@
-<script>
+<script lang="ts">
 	import { onMount } from 'svelte';
-	export let dua;
+
+	interface Dua {
+		title: string;
+		arabic: string;
+		transliteration: string;
+		translation: string;
+		reference: string;
+		audio?: string;
+	}
+
+	export let dua: Dua;
+	let audio: HTMLAudioElement | null = null;
 	let isPlaying = false;
-	let audio;
 	let canShare = false;
 
 	onMount(() => {
@@ -11,6 +21,8 @@
 	});
 
 	function toggleAudio() {
+		if (!dua.audio) return;
+
 		if (!audio) {
 			audio = new Audio(dua.audio);
 			audio.addEventListener('ended', () => {
@@ -20,19 +32,16 @@
 
 		if (isPlaying) {
 			audio.pause();
-			audio.currentTime = 0;
 			isPlaying = false;
 		} else {
-			audio.play().catch(() => {
-				isPlaying = false;
-			});
+			audio.play();
 			isPlaying = true;
 		}
 	}
 
 	async function shareDua() {
 		const shareText = `${dua.title}\n\n${dua.arabic}\n\n${dua.transliteration}\n\n${dua.translation}\n\nReference: ${dua.reference}`;
-		
+
 		try {
 			if (canShare) {
 				await navigator.share({
@@ -59,7 +68,7 @@
 		toast.className = 'toast';
 		toast.textContent = 'Dua copied to clipboard!';
 		document.body.appendChild(toast);
-		
+
 		setTimeout(() => {
 			toast.classList.add('fade-out');
 			setTimeout(() => document.body.removeChild(toast), 300);
@@ -71,7 +80,7 @@
 		toast.className = 'toast error';
 		toast.textContent = 'Unable to share. Please try again.';
 		document.body.appendChild(toast);
-		
+
 		setTimeout(() => {
 			toast.classList.add('fade-out');
 			setTimeout(() => document.body.removeChild(toast), 300);
@@ -85,7 +94,10 @@
 		<div class="actions">
 			<button class="action-btn" on:click={shareDua} title="Share">
 				<svg viewBox="0 0 24 24" width="18" height="18">
-					<path fill="currentColor" d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"/>
+					<path
+						fill="currentColor"
+						d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"
+					/>
 				</svg>
 			</button>
 			{#if dua.audio}
@@ -226,12 +238,24 @@
 	}
 
 	@keyframes fade-in {
-		from { opacity: 0; transform: translate(-50%, 1rem); }
-		to { opacity: 1; transform: translate(-50%, 0); }
+		from {
+			opacity: 0;
+			transform: translate(-50%, 1rem);
+		}
+		to {
+			opacity: 1;
+			transform: translate(-50%, 0);
+		}
 	}
 
 	@keyframes fade-out {
-		from { opacity: 1; transform: translate(-50%, 0); }
-		to { opacity: 0; transform: translate(-50%, 1rem); }
+		from {
+			opacity: 1;
+			transform: translate(-50%, 0);
+		}
+		to {
+			opacity: 0;
+			transform: translate(-50%, 1rem);
+		}
 	}
 </style>

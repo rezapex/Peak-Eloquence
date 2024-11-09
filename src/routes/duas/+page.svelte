@@ -1,13 +1,14 @@
 <script>
 	import DuaCard from './DuaCard.svelte';
 	export let data;
-	
+
 	let selectedCategory = data.categories[0];
 	let searchTerm = '';
-	
-	$: filteredDuas = selectedCategory.duas.filter(dua => 
-		dua.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-		dua.translation.toLowerCase().includes(searchTerm.toLowerCase())
+
+	$: filteredDuas = selectedCategory.duas.filter(
+		(dua) =>
+			dua.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+			dua.translation.toLowerCase().includes(searchTerm.toLowerCase())
 	);
 </script>
 
@@ -16,55 +17,69 @@
 </svelte:head>
 
 <div class="container">
-	<header>
-		<a href="/" class="back-link">← Back to Home</a>
-		<h1>Duas (Supplications)</h1>
-	</header>
+	<div class="content-wrapper">
+		<header>
+			<a href="/" class="back-link">← Back to Home</a>
+			<h1>Duas (Supplications)</h1>
+		</header>
 
-	<div class="search-section">
-		<input
-			type="text"
-			bind:value={searchTerm}
-			placeholder="Search duas..."
-			class="search-input"
-		/>
-	</div>
+		<div class="search-section">
+			<input
+				type="text"
+				bind:value={searchTerm}
+				placeholder="Search duas..."
+				class="search-input"
+			/>
+		</div>
 
-	<div class="content">
-		<aside class="categories">
-			<h2>Categories</h2>
-			<ul>
-				{#each data.categories as category}
-					<li>
-						<button
-							class:active={selectedCategory.id === category.id}
-							on:click={() => selectedCategory = category}
-						>
-							{category.name}
-						</button>
-					</li>
-				{/each}
-			</ul>
-		</aside>
+		<div class="content">
+			<aside class="categories">
+				<h2>Categories</h2>
+				<ul>
+					{#each data.categories as category}
+						<li>
+							<button
+								class:active={selectedCategory.id === category.id}
+								on:click={() => (selectedCategory = category)}
+							>
+								{category.name}
+							</button>
+						</li>
+					{/each}
+				</ul>
+			</aside>
 
-		<main class="duas-list">
-			<h2>{selectedCategory.name}</h2>
-			{#if filteredDuas.length === 0}
-				<p class="no-results">No duas found matching your search.</p>
-			{:else}
-				{#each filteredDuas as dua}
-					<DuaCard {dua} />
-				{/each}
-			{/if}
-		</main>
+			<main class="duas-list">
+				<h2>{selectedCategory.name}</h2>
+				{#if filteredDuas.length === 0}
+					<p class="no-results">No duas found matching your search.</p>
+				{:else}
+					{#each filteredDuas as dua}
+						<DuaCard {dua} />
+					{/each}
+				{/if}
+			</main>
+		</div>
 	</div>
 </div>
 
 <style>
 	.container {
+		width: 100%;
 		max-width: 1200px;
 		margin: 0 auto;
 		padding: 2rem;
+		box-sizing: border-box;
+		display: flex;
+		flex-direction: column;
+	}
+
+	.content-wrapper {
+		width: 100%;
+		max-width: 900px;
+		margin: 0 auto;
+		display: flex;
+		flex-direction: column;
 	}
 
 	header {
@@ -109,6 +124,8 @@
 		display: grid;
 		grid-template-columns: 250px 1fr;
 		gap: 2rem;
+		width: 100%;
+		margin-top: 2rem;
 	}
 
 	.categories {

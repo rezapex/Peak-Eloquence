@@ -1,37 +1,44 @@
-<script>
-	import { onMount } from 'svelte';
-	
-	export let location;
+<script lang="ts">
+	interface Location {
+		latitude: number;
+		longitude: number;
+	}
+
+	export let location: Location | null = null;
 	export let locationError;
 	export let getLocation;
-	
-	let qiblaDirection = null;
+
+	let qiblaDirection: number | null = null;
 	let compassError = false;
-	let compass = null;
+	let compass: number | null = null;
 	let isCalibrating = false;
 	let isMobile = false;
 
-	function calculateQibla(lat, lng) {
+	function calculateQibla(lat: number, lng: number): number {
 		const kaabaLat = 21.4225;
 		const kaabaLng = 39.8262;
-		
+
 		const latRad = lat * (Math.PI / 180);
 		const lngRad = lng * (Math.PI / 180);
 		const kaabaLatRad = kaabaLat * (Math.PI / 180);
 		const kaabaLngRad = kaabaLng * (Math.PI / 180);
-		
+
 		const y = Math.sin(kaabaLngRad - lngRad);
-		const x = Math.cos(latRad) * Math.tan(kaabaLatRad) -
-				Math.sin(latRad) * Math.cos(kaabaLngRad - lngRad);
-		
+		const x =
+			Math.cos(latRad) * Math.tan(kaabaLatRad) - Math.sin(latRad) * Math.cos(kaabaLngRad - lngRad);
+
 		let qibla = Math.atan2(y, x) * (180 / Math.PI);
 		return (qibla + 360) % 360;
 	}
 
-	function handleOrientation(event) {
-		if (event.webkitCompassHeading) {
+	interface ExtendedDeviceOrientationEvent extends DeviceOrientationEvent {
+		webkitCompassHeading?: number;
+	}
+
+	function handleOrientation(event: ExtendedDeviceOrientationEvent) {
+		if (event.webkitCompassHeading !== undefined) {
 			compass = event.webkitCompassHeading;
-		} else if (event.alpha) {
+		} else if (event.alpha !== null) {
 			compass = 360 - event.alpha;
 		}
 	}
@@ -40,44 +47,37 @@
 		qiblaDirection = calculateQibla(location.latitude, location.longitude);
 	}
 
-	onMount(() => {
-		isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-
+	async function initCompass() {
 		if (window.DeviceOrientationEvent) {
-			if (typeof DeviceOrientationEvent.requestPermission === 'function') {
-				isCalibrating = true;
-				DeviceOrientationEvent.requestPermission()
-					.then(response => {
-						if (response === 'granted') {
-							window.addEventListener('deviceorientation', handleOrientation);
-						} else {
-							compassError = true;
-						}
-						isCalibrating = false;
-					})
-					.catch(() => {
+			if ('requestPermission' in DeviceOrientationEvent) {
+				try {
+					isCalibrating = true;
+					const response = await (DeviceOrientationEvent as any).requestPermission();
+					if (response === 'granted') {
+						window.addEventListener('deviceorientation', handleOrientation);
+					} else {
 						compassError = true;
-						isCalibrating = false;
-					});
+					}
+				} catch (error) {
+					compassError = true;
+				} finally {
+					isCalibrating = false;
+				}
 			} else {
 				window.addEventListener('deviceorientation', handleOrientation);
 			}
 		} else {
 			compassError = true;
 		}
-
-		return () => {
-			window.removeEventListener('deviceorientation', handleOrientation);
-		};
-	});
+	}
 </script>
 
 <div class="tool-card">
 	<h2>Qibla Finder</h2>
 	{#if !isMobile}
 		<p class="notice">
-			⚠️ The Qibla compass requires a mobile device with a compass sensor.
-			Please open this page on your smartphone or tablet.
+			⚠️ The Qibla compass requires a mobile device with a compass sensor. Please open this page on
+			your smartphone or tablet.
 		</p>
 	{:else if locationError}
 		<p class="error">{locationError}</p>
@@ -87,16 +87,8 @@
 	{:else if compassError}
 		<p class="error">Compass not available on this device.</p>
 	{:else if location && qiblaDirection !== null && compass !== null}
-		<div 
-			class="compass" 
-			style="transform: rotate({compass}deg)"
-		>
-			<div 
-				class="qibla-direction"
-				style="transform: rotate({qiblaDirection}deg)"
-			>
-				🕋
-			</div>
+		<div class="compass" style="transform: rotate({compass}deg)">
+			<div class="qibla-direction" style="transform: rotate({qiblaDirection}deg)">🕋</div>
 			<div class="compass-arrow">↑</div>
 		</div>
 		<p class="coordinates">
@@ -160,7 +152,8 @@
 		font-size: 2rem;
 	}
 
-	.coordinates, .direction {
+	.coordinates,
+	.direction {
 		margin: 1rem 0;
 		color: #666;
 		font-size: 0.9rem;
