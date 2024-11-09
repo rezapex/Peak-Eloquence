@@ -3,6 +3,10 @@
 	import Header from './Header.svelte';
 	import '../app.css';
 	import { page } from '$app/stores';
+	import { inject } from '@vercel/analytics';
+
+	// Initialize Vercel Analytics
+	inject();
 
 	$: title = getTitle($page);
 	$: description = getDescription($page);
